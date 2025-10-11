@@ -1,5 +1,5 @@
 {
-  "name": "oapimint",
+  "name": "mint-oapi-codegen-example",
   "application": {
     "icon": "assets/favicon.png",
     "head": "assets/head.html",
