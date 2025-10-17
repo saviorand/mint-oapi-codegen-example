@@ -5,59 +5,42 @@
 
 
 
-// NewPost defines model for NewPost.
-type NewPost {
-  authorId : Number,
-  content : String,
-  title : String
-}
 
-// Post defines model for Post.
-type Post {
-  authorId : Number,
-  content : String,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Todo represents a todo item
+type Todo {
+  completed : Bool,
   id : Number,
-  published : Maybe(Bool),
-  title : String
+  text : String
 }
 
-// User defines model for User.
-type User {
-  bio : Maybe(String),
-  email : String,
-  id : Number,
-  username : String
+// PostTodosJSONBody defines the request body for creating a todo
+type PostTodosJSONBody {
+  text : String
 }
-
-
-
-// ListPostsParams defines parameters for ListPosts.
-type ListPostsParams {
-  limit : Maybe(Number),
-  offset : Maybe(Number)
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // APIError represents errors that can occur during API calls
 type APIError {
@@ -66,48 +49,16 @@ type APIError {
   DecodeError(Object.Error)
 }
 
-// BlogApi provides HTTP client methods for the API
-module BlogApi {
+// TodoApi provides HTTP client methods for the API
+module TodoApi {
   // The base URL of the API server
-  const BASE_URL = "https://jsonplaceholder.typicode.com"
+  const BASE_URL = "http://localhost:8080"
 
-// ListPosts
-  fun listPosts(params : ListPostsParams) : Promise(Result(APIError, Array(Post))) {
-    let queryParams =
-      SearchParams.empty()
-      
-      |> ((sp : SearchParams) : SearchParams {
-        case params.limit {
-          Maybe.Just(value) =>
-            SearchParams.set("limit", Number.toString(value), sp)
-          
-          Maybe.Nothing =>
-            sp
-        }
-      })
-      
-      |> ((sp : SearchParams) : SearchParams {
-        case params.offset {
-          Maybe.Just(value) =>
-            SearchParams.set("offset", Number.toString(value), sp)
-          
-          Maybe.Nothing =>
-            sp
-        }
-      })
-
-    let queryString =
-      SearchParams.toString(queryParams)
-      |> ((qs : String) : String {
-        if String.isEmpty(qs) {
-          ""
-        } else {
-          "?" + qs
-        }
-      })
+// GetTodos
+  fun getTodos() : Promise(Result(APIError, Array(Todo))) {
 
     let url =
-      "#{BASE_URL}/posts" + queryString
+      "#{BASE_URL}/todos"
 
     let request =
       Http.get(url)
@@ -124,17 +75,17 @@ module BlogApi {
     let JSON(object) =
       httpResponse.body or return Result.Err(APIError.JsonParseError)
 
-    decode object as Array(Post)
+    decode object as Array(Todo)
     |> Result.mapError((error : Object.Error) : APIError {
       APIError.DecodeError(error)
     })
   }
 
-// CreatePost with body
-  fun createPost(body : NewPost) : Promise(Result(APIError, String)) {
+// PostTodos with body
+  fun postTodos(body : PostTodosJSONBody) : Promise(Result(APIError, Todo)) {
 
     let url =
-      "#{BASE_URL}/posts"
+      "#{BASE_URL}/todos"
 
     let request =
       Http.post(url)
@@ -152,17 +103,39 @@ module BlogApi {
     let JSON(object) =
       httpResponse.body or return Result.Err(APIError.JsonParseError)
 
-    decode object as String
+    decode object as Todo
     |> Result.mapError((error : Object.Error) : APIError {
       APIError.DecodeError(error)
     })
   }
 
-// GetPost
-  fun getPost(postId : Number) : Promise(Result(APIError, Post)) {
+// DeleteTodosId
+  fun deleteTodosId(id : String) : Promise(Result(APIError, Bool)) {
 
     let url =
-      "#{BASE_URL}/posts/#{postId}"
+      "#{BASE_URL}/todos/#{id}"
+
+    let request =
+      Http.delete(url)
+
+    let Ok(httpResponse) =
+      await Http.send(request) or return Result.Err(
+        APIError.HttpError({
+          headers: Map.empty(),
+          type: Http.Error.NetworkError,
+          status: 0,
+          url: url
+        }))
+
+    // DELETE returns 204 No Content, so just return success
+    Result.Ok(true)
+  }
+
+// GetTodosId
+  fun getTodosId(id : String) : Promise(Result(APIError, Todo)) {
+
+    let url =
+      "#{BASE_URL}/todos/#{id}"
 
     let request =
       Http.get(url)
@@ -179,34 +152,7 @@ module BlogApi {
     let JSON(object) =
       httpResponse.body or return Result.Err(APIError.JsonParseError)
 
-    decode object as Post
-    |> Result.mapError((error : Object.Error) : APIError {
-      APIError.DecodeError(error)
-    })
-  }
-
-// GetUser
-  fun getUser(userId : Number) : Promise(Result(APIError, User)) {
-
-    let url =
-      "#{BASE_URL}/users/#{userId}"
-
-    let request =
-      Http.get(url)
-
-    let Ok(httpResponse) =
-      await Http.send(request) or return Result.Err(
-        APIError.HttpError({
-          headers: Map.empty(),
-          type: Http.Error.NetworkError,
-          status: 0,
-          url: url
-        }))
-
-    let JSON(object) =
-      httpResponse.body or return Result.Err(APIError.JsonParseError)
-
-    decode object as User
+    decode object as Todo
     |> Result.mapError((error : Object.Error) : APIError {
       APIError.DecodeError(error)
     })
