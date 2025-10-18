@@ -1,497 +1,158 @@
-type Filter {
-  All
-  Active
-  Completed
-}
-
-type Status {
-  Loading
-  Loaded
-  Failed(String)
-}
-
+// Original code: https://github.com/mint-lang/mint-example-todo
 component Main {
-  state todos : Array(Todo) = []
-  state status : Status = Status.Loaded
-  state newTodoText : String = ""
-  state filter : Filter = Filter.All
+  connect Todos exposing { items, add, load }
 
-  style root {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    font-size: 14px;
-    line-height: 1.4em;
-    background: #f5f5f5;
-    color: #4d4d4d;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
+  state value : String = ""
+
+  style wrapper {
+    background: #E55934;
+    height: 100vh;
   }
 
-  style todoapp {
-    background: #fff;
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 25px 50px 0 rgba(0, 0, 0, 0.1);
-    width: 550px;
-  }
-
-  style header {
-    padding: 20px 15px;
+  style base {
+    font-family: Open Sans;
+    padding-top: 60px;
+    margin: 0 auto;
+    width: 600px;
   }
 
   style title {
-    font-size: 80px;
-    font-weight: 200;
+    font-family: Faster One;
     text-align: center;
-    color: #b83f45;
-    margin: 0;
-    text-rendering: optimizeLegibility;
+    font-size: 60px;
+    color: #FFF;
   }
 
-  style newTodo {
-    width: 100%;
-    font-size: 24px;
+  style input {
     font-family: inherit;
-    font-weight: inherit;
-    line-height: 1.4em;
-    border: none;
-    color: inherit;
-    padding: 16px 16px 16px 60px;
-    border: none;
-    background: rgba(0, 0, 0, 0.003);
-    box-shadow: inset 0 -2px 1px rgba(0,0,0,0.03);
-    box-sizing: border-box;
-
-    &::placeholder {
-      font-style: italic;
-      font-weight: 300;
-      color: rgba(0, 0, 0, 0.4);
-    }
-
-    &:focus {
-      outline: none;
-    }
-  }
-
-  style main {
-    border-top: 1px solid #e6e6e6;
-  }
-
-  style todoList {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  style todoItem {
-    position: relative;
-    font-size: 24px;
-    border-bottom: 1px solid #ededed;
-    display: flex;
-    align-items: center;
-
-    &:last-child {
-      border-bottom: none;
-    }
-  }
-
-  style todoItemCompleted {
-    color: #d9d9d9;
-    text-decoration: line-through;
-  }
-
-  style toggle {
-    width: 40px;
-    height: 40px;
-    text-align: center;
-    border: none;
-    background: none;
-    cursor: pointer;
-    appearance: none;
-    margin: 11px 0 11px 15px;
-    position: relative;
-
-    &:before {
-      content: "○";
-      font-size: 30px;
-      color: #e6e6e6;
-      line-height: 40px;
-    }
-  }
-
-  style toggleChecked {
-    &:before {
-      content: "✓";
-      font-size: 20px;
-      color: #5dc2af;
-      line-height: 40px;
-      font-weight: bold;
-    }
-  }
-
-  style label {
-    word-break: break-all;
-    padding: 15px 15px 15px 15px;
-    display: block;
-    line-height: 1.2;
-    transition: color 0.4s;
+    padding: 5px 15px;
+    font-size: 20px;
+    border: 0;
     flex: 1;
   }
 
-  style destroyButton {
-    position: absolute;
-    right: 10px;
-    width: 40px;
-    height: 40px;
+  style button {
+    background: rgba(0,0,0,0.5);
+    font-family: inherit;
+    margin-left: 10px;
+    font-weight: 600;
+    font-size: 20px;
+    padding: 0 10px;
+    color: #FFF;
+    border: 0;
+  }
+
+  style box {
+    background: rgba(255, 255, 255, 0.15);
+    margin-top: 20px;
+    padding: 20px;
+  }
+
+  style form {
+    margin-top: 20px;
+    display: flex;
+  }
+
+  style empty {
+    text-align: center;
+    padding: 50px 0;
     font-size: 30px;
-    color: #cc9a9a;
-    margin: auto 0;
-    transition: color 0.2s ease-out;
-    background: none;
-    border: none;
-    cursor: pointer;
-    opacity: 0;
+    color: #FFF;
 
-    &:hover {
-      color: #af5b5e;
+    svg {
+      fill: currentColor;
+      margin-top: 20px;
+      height: 100px;
+      width: 100px;
     }
   }
 
-  style todoItemHover {
-    .destroyButton {
-      opacity: 1;
-    }
+  style subtitle {
+    font-family: Faster One;
+    margin: 10px 0;
+    font-size: 24px;
+    color: #FFF;
   }
 
-  style footer {
-    color: #777;
-    padding: 10px 15px;
-    height: 20px;
-    text-align: center;
-    border-top: 1px solid #e6e6e6;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  style todoCount {
-    text-align: left;
-    
-    strong {
-      font-weight: 300;
-    }
-  }
-
-  style filters {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: flex;
-    gap: 5px;
-  }
-
-  style filterButton {
-    color: inherit;
-    padding: 3px 7px;
-    text-decoration: none;
-    border: 1px solid transparent;
-    border-radius: 3px;
-    background: none;
-    cursor: pointer;
-    font-size: 14px;
-
-    &:hover {
-      border-color: rgba(175, 47, 47, 0.1);
-    }
-  }
-
-  style filterSelected {
-    border-color: rgba(175, 47, 47, 0.2);
-  }
-
-  style clearCompleted {
-    color: inherit;
-    border: none;
-    background: none;
-    cursor: pointer;
-    position: relative;
-    font-size: 14px;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  style info {
-    margin: 65px auto 0;
-    color: #bfbfbf;
-    font-size: 10px;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
-    text-align: center;
-    
-    p {
-      line-height: 1;
-    }
-  }
-
-  style loading {
-    text-align: center;
-    padding: 20px;
-    color: #777;
-    font-size: 16px;
-  }
-
-  style error {
-    text-align: center;
-    padding: 20px;
-    color: #af5b5e;
-    font-size: 14px;
+  get empty : Html {
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      height="24"
+      width="24"
+    >
+      <path
+        d={
+          "M22 2v22h-20v-22h3c1.23 0 2.181-1.084 3-2h8c.82.916 1.771 2 3 " \
+          "2h3zm-11 1c0 .552.448 1 1 1 .553 0 1-.448 1-1s-.447-1-1-1c-.552 " \
+          "0-1 .448-1 1zm9 1h-4l-2 2h-3.897l-2.103-2h-4v18h16v-18zm-13 " \
+          "9.729l.855-.791c1 .484 1.635.852 2.76 1.654 2.113-2.399 " \
+          "3.511-3.616 6.106-5.231l.279.64c-2.141 1.869-3.709 3.949-5.967 " \
+          "7.999-1.393-1.64-2.322-2.686-4.033-4.271z"
+        }
+      />
+    </svg>
   }
 
   fun componentDidMount : Promise(Void) {
-    loadTodos()
+    load()
   }
 
-  fun loadTodos : Promise(Void) {
-    next { status: Status.Loading }
-    
-    let response = await TodoApi.getTodos()
-    
-    case response {
-      Result.Ok(fetchedTodos) => 
-        next { 
-          todos: fetchedTodos,
-          status: Status.Loaded 
-        }
-      Result.Err(APIError.HttpError(error)) => 
-        next { status: Status.Failed("Network error: Could not connect to server") }
-      Result.Err(APIError.JsonParseError) => 
-        next { status: Status.Failed("Invalid response from server") }
-      Result.Err(APIError.DecodeError(error)) => 
-        next { status: Status.Failed("Could not parse server response") }
-    }
+  fun handleInput (event : Html.Event) : Promise(Void) {
+    next { value: Dom.getValue(event.target) }
   }
 
-  fun handleNewTodoInput(event : Html.Event) : Promise(Void) {
-    next { newTodoText: Dom.getValue(event.target) }
-  }
-
-  fun handleNewTodoKeyDown(event : Html.Event) : Promise(Void) {
-    if event.keyCode == 13 {
-      createTodo()
-    } else {
-      Promise.never()
-    }
-  }
-
-  fun createTodo : Promise(Void) {
-    if String.isEmpty(String.trim(newTodoText)) {
-      Promise.never()
-    } else {
-      let body = { text: String.trim(newTodoText) }
-      let response = await TodoApi.postTodos(body)
-      
-      case response {
-        Result.Ok(todo) => {
-          next { newTodoText: "" }
-          loadTodos()
-        }
-        Result.Err(error) => 
-          next { status: Status.Failed("Failed to create todo") }
-      }
-    }
-  }
-
-  fun deleteTodo(id : Number) : Promise(Void) {
-    let response = await TodoApi.deleteTodosId(Number.toString(id))
-    
-    case response {
-      Result.Ok(success) => loadTodos()
-      Result.Err(error) => 
-        next { status: Status.Failed("Failed to delete todo") }
-    }
-  }
-
-  fun toggleTodo(todo : Todo) : Promise(Void) {
-    // Since the backend doesn't support updates, we toggle locally
-    // The change won't persist on reload
-    let updatedTodos = 
-      Array.map(todos, (t : Todo) {
-        if t.id == todo.id {
-          { 
-            id: t.id,
-            text: t.text,
-            completed: !t.completed
-          }
-        } else {
-          t
-        }
-      })
-    
-    next { todos: updatedTodos }
-  }
-
-  fun clearCompleted : Promise(Void) {
-    // TODO: Implement batch deletion when Mint supports it better
-    // For now, users can delete completed items one by one
-    Promise.never()
-  }
-
-  fun setFilter(newFilter : Filter) : Promise(Void) {
-    next { filter: newFilter }
-  }
-
-  fun getFilteredTodos : Array(Todo) {
-    case filter {
-      Filter.All => todos
-      Filter.Active => Array.select(todos, (todo : Todo) { !todo.completed })
-      Filter.Completed => Array.select(todos, (todo : Todo) { todo.completed })
-    }
-  }
-
-  fun getActiveCount : Number {
-    Array.size(Array.select(todos, (todo : Todo) { !todo.completed }))
-  }
-
-  fun getCompletedCount : Number {
-    Array.size(Array.select(todos, (todo : Todo) { todo.completed }))
-  }
-
-  fun renderTodo(todo : Todo) : Html {
-    if todo.completed {
-      <li::todoItem::todoItemCompleted>
-        <button::toggle::toggleChecked
-          onClick={(event : Html.Event) { toggleTodo(todo) }}/>
-        <div::label>
-          todo.text
-        </div>
-        <button::destroyButton 
-          onClick={(event : Html.Event) { deleteTodo(todo.id) }}>
-          "×"
-        </button>
-      </li>
-    } else {
-      <li::todoItem>
-        <button::toggle
-          onClick={(event : Html.Event) { toggleTodo(todo) }}/>
-        <div::label>
-          todo.text
-        </div>
-        <button::destroyButton 
-          onClick={(event : Html.Event) { deleteTodo(todo.id) }}>
-          "×"
-        </button>
-      </li>
-    }
+  fun addTodo (event : Html.Event) : Promise(Void) {
+    Html.Event.preventDefault(event)
+    await add(value)
+    next { value: "" }
   }
 
   fun render : Html {
-    let filteredTodos = getFilteredTodos()
-    let activeCount = getActiveCount()
-    let completedCount = getCompletedCount()
-    let hasTodos = Array.size(todos) > 0
+    <div::wrapper>
+      <div::base>
+        <div::title>"Todos!"</div>
 
-    <div::root>
-      <div::todoapp>
-        <header::header>
-          <h1::title>"todos"</h1>
-          <input::newTodo
-            type="text"
-            placeholder="What needs to be done?"
-            value={newTodoText}
-            onChange={handleNewTodoInput}
-            onKeyDown={handleNewTodoKeyDown}/>
-        </header>
+        <div::box>
+          <div::subtitle>"To do:"</div>
 
-        case status {
-          Status.Loading => 
-            <div::loading>"Loading todos..."</div>
-          
-          Status.Failed(message) => 
-            <div::error>
-              "⚠ "
-              message
-            </div>
-          
-          Status.Loaded =>
-            if hasTodos {
-              <div>
-                <section::main>
-                  <ul::todoList>
-                    for todo of filteredTodos {
-                      renderTodo(todo)
-                    }
-                  </ul>
-                </section>
+          <div>
+            {
+              let todoItems =
+                Array.reject(items, (todo : TodoItem) : Bool { todo.completed })
 
-                <footer::footer>
-                  <span::todoCount>
-                    <strong>
-                      Number.toString(activeCount)
-                    </strong>
-                    if activeCount == 1 {
-                      " item left"
-                    } else {
-                      " items left"
-                    }
-                  </span>
-
-                  <ul::filters>
-                    <li>
-                      if filter == Filter.All {
-                        <button::filterButton::filterSelected
-                          onClick={(event : Html.Event) { setFilter(Filter.All) }}>
-                          "All"
-                        </button>
-                      } else {
-                        <button::filterButton
-                          onClick={(event : Html.Event) { setFilter(Filter.All) }}>
-                          "All"
-                        </button>
-                      }
-                    </li>
-                    <li>
-                      if filter == Filter.Active {
-                        <button::filterButton::filterSelected
-                          onClick={(event : Html.Event) { setFilter(Filter.Active) }}>
-                          "Active"
-                        </button>
-                      } else {
-                        <button::filterButton
-                          onClick={(event : Html.Event) { setFilter(Filter.Active) }}>
-                          "Active"
-                        </button>
-                      }
-                    </li>
-                    <li>
-                      if filter == Filter.Completed {
-                        <button::filterButton::filterSelected
-                          onClick={(event : Html.Event) { setFilter(Filter.Completed) }}>
-                          "Completed"
-                        </button>
-                      } else {
-                        <button::filterButton
-                          onClick={(event : Html.Event) { setFilter(Filter.Completed) }}>
-                          "Completed"
-                        </button>
-                      }
-                    </li>
-                  </ul>
-
-                  <div/>
-                </footer>
-              </div>
-            } else {
-              <div/>
+              if Array.isEmpty(todoItems) {
+                [
+                  <div::empty>
+                    <div>"All done!"</div>
+                    empty
+                  </div>
+                ]
+              } else {
+                for todo of todoItems {
+                  <Todo todo={todo}/>
+                }
+              }
             }
-        }
-      </div>
+          </div>
 
-      <footer::info>
-        <p>"Note: Completed status is local only (backend doesn't support updates)"</p>
-        <p>"Created with Mint"</p>
-      </footer>
+          <div::subtitle>"Done:"</div>
+
+          <div>
+            for todo of items {
+              <Todo todo={todo}/>
+            } when {
+              todo.completed
+            }
+          </div>
+
+          <form::form onSubmit={addTodo}>
+            <input::input onInput={handleInput} value={value}/>
+
+            <button::button disabled={String.isEmpty(value)}>"Add"</button>
+          </form>
+        </div>
+      </div>
     </div>
   }
 }

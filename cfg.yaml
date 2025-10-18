@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../../configuration-schema.json
-package: BlogApi
-output: blog-api.gen.mint
+package: TodoApi
+output: source/Api.mint
 generate:
   models: true
   client: true

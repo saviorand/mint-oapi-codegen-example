@@ -1,142 +1,183 @@
-openapi: "3.0.0"
-info:
-  version: 1.0.0
-  title: Simple Blog API
-  description: A simple blog API for testing Mint code generation
-servers:
-  - url: https://jsonplaceholder.typicode.com
-paths:
-  /users/{userId}:
-    get:
-      operationId: getUser
-      summary: Get a user by ID
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: User found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-  /posts:
-    get:
-      operationId: listPosts
-      summary: List all posts
-      parameters:
-        - name: limit
-          in: query
-          schema:
-            type: integer
-        - name: offset
-          in: query
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: List of posts
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Post"
-    post:
-      operationId: createPost
-      summary: Create a new post
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/NewPost"
-      responses:
-        '201':
-          description: Post created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Post"
-  /posts/{postId}:
-    get:
-      operationId: getPost
-      summary: Get a post by ID
-      parameters:
-        - name: postId
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Post found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Post"
-
-components:
-  schemas:
-    User:
-      type: object
-      required:
-        - id
-        - username
-        - email
-      properties:
-        id:
-          type: integer
-          description: User ID
-        username:
-          type: string
-          description: Username
-        email:
-          type: string
-          description: Email address
-        bio:
-          type: string
-          description: User bio (optional)
-    Post:
-      type: object
-      required:
-        - id
-        - title
-        - content
-        - authorId
-      properties:
-        id:
-          type: integer
-          description: Post ID
-        title:
-          type: string
-          description: Post title
-        content:
-          type: string
-          description: Post content
-        authorId:
-          type: integer
-          description: ID of the author
-        published:
-          type: boolean
-          description: Whether the post is published
-    NewPost:
-      type: object
-      required:
-        - title
-        - content
-        - authorId
-      properties:
-        title:
-          type: string
-          description: Post title
-        content:
-          type: string
-          description: Post content
-        authorId:
-          type: integer
-          description: ID of the author
-
+{
+  "openapi": "3.0.3",
+  "info": {
+    "description": "A simple REST API for managing todo items",
+    "title": "Todo API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/todos": {
+      "get": {
+        "description": "Retrieves a list of all todo items",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Todo"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "List of todo items"
+          }
+        },
+        "summary": "Get all todos",
+        "tags": [
+          "todos"
+        ]
+      },
+      "post": {
+        "description": "Creates a new todo item with the provided text",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTodo"
+              }
+            }
+          },
+          "description": "Todo item with 'text' field",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            },
+            "description": "The created todo item"
+          }
+        },
+        "summary": "Create a new todo",
+        "tags": [
+          "todos"
+        ]
+      }
+    },
+    "/todos/{id}": {
+      "delete": {
+        "description": "Deletes a todo item by its ID",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content on successful deletion"
+          }
+        },
+        "summary": "Delete a todo",
+        "tags": [
+          "todos"
+        ]
+      },
+      "get": {
+        "description": "Retrieves a single todo item by its ID",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            },
+            "description": "The requested todo item"
+          }
+        },
+        "summary": "Get a todo by ID",
+        "tags": [
+          "todos"
+        ]
+      },
+      "put": {
+        "description": "Updates an existing todo item with new text and/or completion status",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Todo"
+              }
+            }
+          },
+          "description": "Updated todo item",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            },
+            "description": "The updated todo item"
+          }
+        },
+        "summary": "Update a todo",
+        "tags": [
+          "todos"
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateTodo": {
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Todo": {
+        "properties": {
+          "completed": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

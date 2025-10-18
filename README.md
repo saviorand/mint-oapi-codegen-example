@@ -29,5 +29,5 @@ Then generate the code from an OpenAPI specification:
 mint-oapi-codegen -config cfg.yaml api.yaml
 ```
 
-The code generated for this example can be found in `source/Client.mint`.
+The code generated for this example can be found in `source/Api.mint`.
 
