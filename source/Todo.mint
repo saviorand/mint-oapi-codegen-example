@@ -2,7 +2,7 @@
 component Todo {
   connect Todos exposing { remove, toggle }
 
-  property todo : TodoItem = { completed: false, text: "", id: 0 }
+  property todo : Todo = { completed: Maybe.Just(false), text: Maybe.Just(""), id: Maybe.Just(0) }
 
   const TRASH_CAN_ICON =
     <svg
@@ -85,18 +85,28 @@ component Todo {
   }
 
   get opacity : Number {
-    if todo.completed {
-      0.5
-    } else {
-      1
+    case todo.completed {
+      Maybe.Just(completed) =>
+        if completed {
+          0.5
+        } else {
+          1
+        }
+
+      Maybe.Nothing => 1
     }
   }
 
   get textDecoration : String {
-    if todo.completed {
-      "line-through"
-    } else {
-      ""
+    case todo.completed {
+      Maybe.Just(completed) =>
+        if completed {
+          "line-through"
+        } else {
+          ""
+        }
+
+      Maybe.Nothing => ""
     }
   }
 
@@ -115,7 +125,12 @@ component Todo {
       </button>
 
       <span::span>
-        todo.text
+        {
+          case todo.text {
+            Maybe.Just(text) => text
+            Maybe.Nothing => ""
+          }
+        }
       </span>
 
       <button::icon onClick={handleRemove}>

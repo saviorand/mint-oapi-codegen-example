@@ -119,7 +119,13 @@ component Main {
           <div>
             {
               let todoItems =
-                Array.reject(items, (todo : TodoItem) : Bool { todo.completed })
+                Array.reject(items,
+                  (todo : Todo) : Bool {
+                    case todo.completed {
+                      Maybe.Just(completed) => completed
+                      Maybe.Nothing => false
+                    }
+                  })
 
               if Array.isEmpty(todoItems) {
                 [
@@ -142,7 +148,10 @@ component Main {
             for todo of items {
               <Todo todo={todo}/>
             } when {
-              todo.completed
+              case todo.completed {
+                Maybe.Just(completed) => completed
+                Maybe.Nothing => false
+              }
             }
           </div>
 
